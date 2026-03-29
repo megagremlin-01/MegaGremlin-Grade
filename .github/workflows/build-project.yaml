@@ -1,28 +1,16 @@
-name: Build-Plugin
-on: [push]
-
-jobs:
-  build:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Download Headers
+- name: Download Headers
         shell: powershell
         run: |
-          # 1. Create the directory first
           New-Item -ItemType Directory -Force -Path deps
-          
-          # 2. Download the 'Big Three' headers
           $baseUrl = "https://raw.githubusercontent.com/obsproject/obs-studio/master/libobs"
+          
+          # The Core Chain
           Invoke-WebRequest -Uri "$baseUrl/obs-module.h" -OutFile "deps/obs-module.h"
           Invoke-WebRequest -Uri "$baseUrl/obs.h" -OutFile "deps/obs.h"
           Invoke-WebRequest -Uri "$baseUrl/obs-data.h" -OutFile "deps/obs-data.h"
-
-      - name: Configure & Build
-        run: |
-          mkdir build
-          cd build
-          # We tell CMake to look in our new deps folder
-          cmake .. -DCMAKE_INCLUDE_PATH="../deps"
-          cmake --build . --config Release
+          Invoke-WebRequest -Uri "$baseUrl/obs-properties.h" -OutFile "deps/obs-properties.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs-interaction.h" -OutFile "deps/obs-interaction.h"
+          
+          # The Config Handshake
+          # We create the 'fake' obsconfig.h again just to be safe
+          New-Item -ItemType File -Path "deps/obsconfig.h" -Force

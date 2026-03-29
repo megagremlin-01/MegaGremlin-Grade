@@ -7,17 +7,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      # 1. Manually download ONLY the headers you need
       - name: Download Headers
         shell: powershell
         run: |
+          # 1. Create the directory first
           New-Item -ItemType Directory -Force -Path deps
-          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/obsproject/obs-studio/master/libobs/obs-module.h" -OutFile "deps/obs-module.h"
+          
+          # 2. Download the 'Big Three' headers
+          $baseUrl = "https://raw.githubusercontent.com/obsproject/obs-studio/master/libobs"
+          Invoke-WebRequest -Uri "$baseUrl/obs-module.h" -OutFile "deps/obs-module.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs.h" -OutFile "deps/obs.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs-data.h" -OutFile "deps/obs-data.h"
 
-      # 2. Build your project directly
       - name: Configure & Build
         run: |
           mkdir build
           cd build
-          cmake .. -DOBS_INCLUDE_DIR=../deps
+          # We tell CMake to look in our new deps folder
+          cmake .. -DCMAKE_INCLUDE_PATH="../deps"
           cmake --build . --config Release

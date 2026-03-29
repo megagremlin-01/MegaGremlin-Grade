@@ -1,6 +1,6 @@
 // OBS Standard Uniforms
 uniform float4x4 ViewProj;
-uniform texture2d image;
+uniform texture2d image; // OBS uses lowercase 'texture2d'
 
 // Sampler for the video texture
 sampler_state textureSampler {
@@ -30,14 +30,10 @@ PixelData VSDefault(VertData v_in)
     return vert_out;
 }
 
-// Pixel Shader: This is where the magic happens
+// Pixel Shader: Pass-through for first success
 float4 PSDrawLowLatency(PixelData p_in) : TARGET
 {
-    // Sample the current frame
-    float4 rgba = image.Sample(textureSampler, p_in.uv);
-    
-    // Return original color for now (Pass-through)
-    return rgba;
+    return image.Sample(textureSampler, p_in.uv);
 }
 
 // Technique definition for OBS to recognize the filter

@@ -11,8 +11,8 @@ jobs:
       - name: Download Headers
         shell: powershell
         run: |
+          New-Item -ItemType Directory -Force -Path deps
           Invoke-WebRequest -Uri "https://raw.githubusercontent.com/obsproject/obs-studio/master/libobs/obs-module.h" -OutFile "deps/obs-module.h"
-          # (Add any other 2-3 headers you need here)
 
       # 2. Build your project directly
       - name: Configure & Build

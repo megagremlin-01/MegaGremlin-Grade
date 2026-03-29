@@ -3,14 +3,17 @@ project(MegaGremlin-Grade)
 
 include(FetchContent)
 
-# 1. THE BRIDGE: If the runner didn't extract OBS, we do it here.
+# 1. Surgical Fetch: Only get the source, DON'T add_subdirectory
 FetchContent_Declare(
   obs-studio
   URL https://github.com/obsproject/obs-studio/archive/refs/tags/31.1.1.zip
 )
-FetchContent_MakeAvailable(obs-studio)
+FetchContent_GetProperties(obs-studio)
+if(NOT obs-studio_POPULATED)
+  FetchContent_Populate(obs-studio)
+endif()
 
-# 2. Manual Target
+# 2. Define your Plugin
 add_library(MegaGremlin-Grade MODULE)
 
 target_sources(MegaGremlin-Grade PRIVATE
@@ -22,13 +25,13 @@ target_sources(MegaGremlin-Grade PRIVATE
 set_source_files_properties(src/grading.hlsl PROPERTIES VS_TOOL_SET "None")
 set_source_files_properties(src/grading.hlsl PROPERTIES HEADER_FILE_ONLY TRUE)
 
-# 4. PATHING: Now we point to the content WE just fetched
+# 4. Point to the surgical download
 target_include_directories(MegaGremlin-Grade PRIVATE
     src
     ${obs-studio_SOURCE_DIR}/libobs
 )
 
-# 5. Link & Output
+# 5. Link against the system OBS
 target_link_libraries(MegaGremlin-Grade PRIVATE obs)
 
 set_target_properties(MegaGremlin-Grade PROPERTIES

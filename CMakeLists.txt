@@ -34,6 +34,15 @@ if(ENABLE_QT)
   )
 endif()
 
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE src/plugin-main.c)
+target_sources(${CMAKE_PROJECT_NAME} PRIVATE 
+	src/plugin-main.c
+	src/grading.hlsl)
 
-set_target_properties_plugin(${CMAKE_PROJECT_NAME} PROPERTIES OUTPUT_NAME ${_name})
+# This ensures the .hlsl file is packaged with the .dll
+set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
+    OUTPUT_NAME ${CMAKE_PROJECT_NAME}
+    PUBLIC_HEADER "src/grading.hlsl"
+    )
+
+# Helper function from the template to handle the final export logic
+setup_plugin_target(${CMAKE_PROJECT_NAME})

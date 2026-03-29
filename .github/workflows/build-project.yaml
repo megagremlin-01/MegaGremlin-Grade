@@ -39,6 +39,6 @@ jobs:
         run: |
           if (!(Test-Path build)) { mkdir build }
           cd build
-          # Points CMake to the deps folder we just populated
-          cmake .. -DCMAKE_INCLUDE_PATH="../deps"
+          # Use CMAKE_INCLUDE_PATH to point to the parent deps folder
+          cmake .. "-DCMAKE_INCLUDE_PATH=$((Get-Item ..).FullName)/deps"
           cmake --build . --config Release

@@ -9,7 +9,7 @@ set_source_files_properties(src/grading.hlsl PROPERTIES VS_TOOL_SET "None")
 set_source_files_properties(src/grading.hlsl PROPERTIES HEADER_FILE_ONLY TRUE)
 
 # This tells the compiler to look in /deps 
-# Now it will be able to resolve "util/c99defs.h" because it sees the 'util' folder inside 'deps'
+# This allows it to resolve "util/c99defs.h" because it sees the 'util' folder inside 'deps'
 target_include_directories(MegaGremlin-Grade PRIVATE deps src)
 
 # Link against the core OBS library provided by the runner

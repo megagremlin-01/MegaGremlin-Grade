@@ -30,7 +30,7 @@ float4 PSDrawLowLatency(PixelData p_in) : SV_Target
     return image.Sample(textureSampler, p_in.uv);
 }
 
-// 5. OBS Technique Wrapper (Fixed Syntax)
+// 5. OBS Technique Wrapper (Implicit Syntax)
 technique Draw
 {
     pass

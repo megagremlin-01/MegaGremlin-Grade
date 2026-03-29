@@ -9,23 +9,39 @@ jobs:
   build:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
       
       - name: Download Headers
         shell: powershell
         run: |
+          # 1. Create the dependency directory
           New-Item -ItemType Directory -Force -Path deps
-          $zipPath = "obs-headers.zip"
-          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/archive/refs/heads/master.zip" -OutFile $zipPath
-          Expand-Archive -Path $zipPath -DestinationPath "temp_obs"
-          # This moves all headers from the zip into your deps folder
-          Get-ChildItem -Path "temp_obs/obs-studio-master/libobs/*.h" | Copy-Item -Destination "deps" -Force
-          New-Item -ItemType File -Path "deps/obsconfig.h" -Force
+          $baseUrl = "https://raw.githubusercontent.com/obsproject/obs-studio/master/libobs"
+          
+          # 2. Download the 'Essential Chain' of headers
+          # These are the files that include each other to satisfy the compiler
+          Invoke-WebRequest -Uri "$baseUrl/obs-module.h" -OutFile "deps/obs-module.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs.h" -OutFile "deps/obs.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs-data.h" -OutFile "deps/obs-data.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs-defs.h" -OutFile "deps/obs-defs.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs-properties.h" -OutFile "deps/obs-properties.h"
+          Invoke-WebRequest -Uri "$baseUrl/obs-interaction.h" -OutFile "deps/obs-interaction.h"
+          Invoke-WebRequest -Uri "$baseUrl/util/c99defs.h" -OutFile "deps/c99defs.h"
+          
+          # 3. Create the missing config handshake (prevents the 'obsconfig.h' error)
+          "// Empty config" | Out-File -FilePath "deps/obsconfig.h" -Encoding ASCII
 
       - name: Configure & Build
         shell: powershell
         run: |
-          mkdir build
+          # Create build directory
+          if (!(Test-Path build)) { mkdir build }
           cd build
+          
+          # Configure CMake pointing to our local deps folder
+          # We use -DCMAKE_INCLUDE_PATH so CMake knows where to look for headers
           cmake .. -DCMAKE_INCLUDE_PATH="../deps"
+          
+          # Run the actual build
           cmake --build . --config Release

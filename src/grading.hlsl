@@ -1,22 +1,21 @@
-// 1. Raw DirectX 11 Types (Avoids OBS macro confusion)
+// 1. Core Types
 Texture2D image : register(t0);
 SamplerState textureSampler : register(s0);
 
-// 2. Constants
 uniform float4x4 ViewProj;
 
-// 3. Data Structures
+// 2. Data Structures
 struct VertData {
     float4 pos : POSITION;
     float2 uv  : TEXCOORD0;
 };
 
 struct PixelData {
-    float4 pos : SV_Position; // Standard DX11 Semantic
+    float4 pos : SV_Position; 
     float2 uv  : TEXCOORD0;
 };
 
-// 4. Vertex Shader
+// 3. Vertex Shader
 PixelData VSDefault(VertData v_in)
 {
     PixelData vert_out;
@@ -25,14 +24,13 @@ PixelData VSDefault(VertData v_in)
     return vert_out;
 }
 
-// 5. Pixel Shader
+// 4. Pixel Shader
 float4 PSDrawLowLatency(PixelData p_in) : SV_Target
 {
-    // Uses the raw .Sample() method recognized by the DX compiler
     return image.Sample(textureSampler, p_in.uv);
 }
 
-// 6. OBS Technique Wrapper
+// 5. OBS Technique Wrapper (Fixed Syntax)
 technique Draw
 {
     pass

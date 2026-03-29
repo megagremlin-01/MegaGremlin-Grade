@@ -1,23 +1,27 @@
-// OBS Shader Header
+// OBS Standard Uniforms
 uniform float4x4 ViewProj;
-uniform texture2d image; // OBS uses 'image' as the default input identifier
+uniform texture2d image;
 
+// Sampler for the video texture
 sampler_state textureSampler {
     Filter    = Linear;
     AddressU  = Clamp;
     AddressV  = Clamp;
 };
 
+// Data passed from OBS to the Vertex Shader
 struct VertData {
     float4 pos : POSITION;
     float2 uv  : TEXCOORD0;
 };
 
+// Data passed from Vertex Shader to Pixel Shader
 struct PixelData {
-    float4 pos : OVERLAY_COORD; // OBS specific semantic
+    float4 pos : OVERLAY_COORD;
     float2 uv  : TEXCOORD0;
 };
 
+// Default Vertex Shader
 PixelData VSDefault(VertData v_in)
 {
     PixelData vert_out;
@@ -26,15 +30,17 @@ PixelData VSDefault(VertData v_in)
     return vert_out;
 }
 
+// Pixel Shader: This is where the magic happens
 float4 PSDrawLowLatency(PixelData p_in) : TARGET
 {
     // Sample the current frame
     float4 rgba = image.Sample(textureSampler, p_in.uv);
     
-    // This is where we will insert the Oklab math tomorrow
-    return rgba; 
+    // Return original color for now (Pass-through)
+    return rgba;
 }
 
+// Technique definition for OBS to recognize the filter
 technique Draw
 {
     pass

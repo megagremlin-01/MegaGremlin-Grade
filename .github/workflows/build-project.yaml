@@ -15,33 +15,30 @@ jobs:
       - name: Download Headers
         shell: powershell
         run: |
-          # 1. Create the dependency directory
-          New-Item -ItemType Directory -Force -Path deps
+          # 1. Create the directory structure (Crucial for sub-includes)
+          New-Item -ItemType Directory -Force -Path deps/util
           $baseUrl = "https://raw.githubusercontent.com/obsproject/obs-studio/master/libobs"
           
-          # 2. Download the 'Essential Chain' of headers
-          # These are the files that include each other to satisfy the compiler
+          # 2. Download the main headers into /deps
           Invoke-WebRequest -Uri "$baseUrl/obs-module.h" -OutFile "deps/obs-module.h"
           Invoke-WebRequest -Uri "$baseUrl/obs.h" -OutFile "deps/obs.h"
           Invoke-WebRequest -Uri "$baseUrl/obs-data.h" -OutFile "deps/obs-data.h"
           Invoke-WebRequest -Uri "$baseUrl/obs-defs.h" -OutFile "deps/obs-defs.h"
           Invoke-WebRequest -Uri "$baseUrl/obs-properties.h" -OutFile "deps/obs-properties.h"
           Invoke-WebRequest -Uri "$baseUrl/obs-interaction.h" -OutFile "deps/obs-interaction.h"
-          Invoke-WebRequest -Uri "$baseUrl/util/c99defs.h" -OutFile "deps/c99defs.h"
           
-          # 3. Create the missing config handshake (prevents the 'obsconfig.h' error)
+          # 3. Download the utility headers into the /util subfolder
+          Invoke-WebRequest -Uri "$baseUrl/util/c99defs.h" -OutFile "deps/util/c99defs.h"
+          Invoke-WebRequest -Uri "$baseUrl/util/bmem.h" -OutFile "deps/util/bmem.h"
+          
+          # 4. Create the missing config handshake
           "// Empty config" | Out-File -FilePath "deps/obsconfig.h" -Encoding ASCII
 
       - name: Configure & Build
         shell: powershell
         run: |
-          # Create build directory
           if (!(Test-Path build)) { mkdir build }
           cd build
-          
-          # Configure CMake pointing to our local deps folder
-          # We use -DCMAKE_INCLUDE_PATH so CMake knows where to look for headers
+          # Points CMake to the deps folder we just populated
           cmake .. -DCMAKE_INCLUDE_PATH="../deps"
-          
-          # Run the actual build
           cmake --build . --config Release

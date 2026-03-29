@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 project(MegaGremlin-Grade)
 
+# 1. Manual Target
 add_library(MegaGremlin-Grade MODULE)
 
 target_sources(MegaGremlin-Grade PRIVATE
@@ -8,21 +9,28 @@ target_sources(MegaGremlin-Grade PRIVATE
     src/grading.hlsl
 )
 
-# Keep the shader from being pre-compiled by the Windows SDK
+# 2. Shader Protection (Keep this—it solved the FXC errors!)
 set_source_files_properties(src/grading.hlsl PROPERTIES VS_TOOL_SET "None")
 set_source_files_properties(src/grading.hlsl PROPERTIES HEADER_FILE_ONLY TRUE)
 
-# THE FIX: Direct mapping to the OBS Source Tree
-# Based on how the Build-Windows.ps1 downloads dependencies, 
-# we point to the 'libobs' directory inside the 'obs-studio' folder.
-target_include_directories(MegaGremlin-Grade PRIVATE
-    src
-    ${CMAKE_BINARY_DIR}/obs-studio/libobs
-    ${CMAKE_SOURCE_DIR}/obs-studio/libobs
-    ${OBS_INCLUDE_DIR}
+# 3. THE "BRUTE FORCE" FIND: 
+# This looks for the OBS headers wherever the script downloaded them
+find_path(OBS_HEADER_PATH 
+    NAMES obs-module.h
+    PATHS 
+        "${CMAKE_BINARY_DIR}/_deps"
+        "${CMAKE_SOURCE_DIR}/obs-studio"
+        "D:/a/MegaGremlin-Grade/MegaGremlin-Grade/obs-studio" # Hard-coded CI Path
+    PATH_SUFFIXES libobs
+    RECURSIVE
 )
 
-# Link against the core OBS library
+target_include_directories(MegaGremlin-Grade PRIVATE
+    src
+    ${OBS_HEADER_PATH}
+)
+
+# 4. Link & Properties
 target_link_libraries(MegaGremlin-Grade PRIVATE obs)
 
 set_target_properties(MegaGremlin-Grade PROPERTIES

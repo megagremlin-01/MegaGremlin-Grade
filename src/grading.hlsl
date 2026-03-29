@@ -1,8 +1,8 @@
 // OBS Standard Uniforms
 uniform float4x4 ViewProj;
-uniform texture2d image; // OBS uses lowercase 'texture2d'
+uniform texture2d image;
 
-// Sampler for the video texture
+// Sampler state for the video texture
 sampler_state textureSampler {
     Filter    = Linear;
     AddressU  = Clamp;
@@ -30,13 +30,14 @@ PixelData VSDefault(VertData v_in)
     return vert_out;
 }
 
-// Pixel Shader: Pass-through for first success
+// Pixel Shader: Initial Pass-through
 float4 PSDrawLowLatency(PixelData p_in) : TARGET
 {
+    // Sample the video feed
     return image.Sample(textureSampler, p_in.uv);
 }
 
-// Technique definition for OBS to recognize the filter
+// Technique definition required by OBS
 technique Draw
 {
     pass

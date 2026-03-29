@@ -1,16 +1,31 @@
-- name: Download Headers
+name: Build-Plugin
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download Headers
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path deps
-          $baseUrl = "https://raw.githubusercontent.com/obsproject/obs-studio/master/libobs"
-          
-          # The Core Chain
-          Invoke-WebRequest -Uri "$baseUrl/obs-module.h" -OutFile "deps/obs-module.h"
-          Invoke-WebRequest -Uri "$baseUrl/obs.h" -OutFile "deps/obs.h"
-          Invoke-WebRequest -Uri "$baseUrl/obs-data.h" -OutFile "deps/obs-data.h"
-          Invoke-WebRequest -Uri "$baseUrl/obs-properties.h" -OutFile "deps/obs-properties.h"
-          Invoke-WebRequest -Uri "$baseUrl/obs-interaction.h" -OutFile "deps/obs-interaction.h"
-          
-          # The Config Handshake
-          # We create the 'fake' obsconfig.h again just to be safe
+          $zipPath = "obs-headers.zip"
+          Invoke-WebRequest -Uri "https://github.com/obsproject/obs-studio/archive/refs/heads/master.zip" -OutFile $zipPath
+          Expand-Archive -Path $zipPath -DestinationPath "temp_obs"
+          # This moves all headers from the zip into your deps folder
+          Get-ChildItem -Path "temp_obs/obs-studio-master/libobs/*.h" | Copy-Item -Destination "deps" -Force
           New-Item -ItemType File -Path "deps/obsconfig.h" -Force
+
+      - name: Configure & Build
+        shell: powershell
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_INCLUDE_PATH="../deps"
+          cmake --build . --config Release

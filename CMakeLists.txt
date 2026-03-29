@@ -5,31 +5,33 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/common/bootstrap.cmake" NO_POLICY_SCO
 
 project(MegaGremlin-Grade VERSION 0.1.0)
 
-# 2. CRITICAL FIX: Tell CMake where the 'helpers.cmake' file lives
+# 2. CRITICAL: Tell CMake where to find the 'helpers' dictionary
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/helpers")
 
 include(compilerconfig)
 include(defaults)
-include(helpers) # This file contains the 'setup_plugin_target' command
+include(helpers)
 
-# 3. Create the plugin library
+# 3. Define the library
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 # 4. Link OBS Core
 find_package(libobs REQUIRED)
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE OBS::libobs)
 
-# 5. Project Files (Ensure these exist in your F:\MegaGremlin-Grade\src folder)
-target_sources(${CMAKE_PROJECT_NAME} PRIVATE 
-    src/plugin-main.c
-    src/grading.hlsl
+# 5. Project Files (Formatted for Gersemi)
+target_sources(
+  ${CMAKE_PROJECT_NAME}
+  PRIVATE src/plugin-main.c
+          src/grading.hlsl
 )
 
-# 6. Set naming and package the shader file
-set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES
-    OUTPUT_NAME ${CMAKE_PROJECT_NAME}
-    PUBLIC_HEADER "src/grading.hlsl"
+# 6. Set naming and package the shader
+set_target_properties(
+  ${CMAKE_PROJECT_NAME}
+  PROPERTIES OUTPUT_NAME ${CMAKE_PROJECT_NAME}
+             PUBLIC_HEADER "src/grading.hlsl"
 )
 
-# 7. Finalize the plugin target using the template's helper
+# 7. Finalize (This will now be recognized)
 setup_plugin_target(${CMAKE_PROJECT_NAME})

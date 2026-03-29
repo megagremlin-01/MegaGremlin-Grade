@@ -1,7 +1,16 @@
 cmake_minimum_required(VERSION 3.24)
 project(MegaGremlin-Grade)
 
-# 1. Manual Target
+include(FetchContent)
+
+# 1. THE BRIDGE: If the runner didn't extract OBS, we do it here.
+FetchContent_Declare(
+  obs-studio
+  URL https://github.com/obsproject/obs-studio/archive/refs/tags/31.1.1.zip
+)
+FetchContent_MakeAvailable(obs-studio)
+
+# 2. Manual Target
 add_library(MegaGremlin-Grade MODULE)
 
 target_sources(MegaGremlin-Grade PRIVATE
@@ -9,28 +18,17 @@ target_sources(MegaGremlin-Grade PRIVATE
     src/grading.hlsl
 )
 
-# 2. Shader Protection (Keep this—it solved the FXC errors!)
+# 3. Shader Protection
 set_source_files_properties(src/grading.hlsl PROPERTIES VS_TOOL_SET "None")
 set_source_files_properties(src/grading.hlsl PROPERTIES HEADER_FILE_ONLY TRUE)
 
-# 3. THE "BRUTE FORCE" FIND: 
-# This looks for the OBS headers wherever the script downloaded them
-find_path(OBS_HEADER_PATH 
-    NAMES obs-module.h
-    PATHS 
-        "${CMAKE_BINARY_DIR}/_deps"
-        "${CMAKE_SOURCE_DIR}/obs-studio"
-        "D:/a/MegaGremlin-Grade/MegaGremlin-Grade/obs-studio" # Hard-coded CI Path
-    PATH_SUFFIXES libobs
-    RECURSIVE
-)
-
+# 4. PATHING: Now we point to the content WE just fetched
 target_include_directories(MegaGremlin-Grade PRIVATE
     src
-    ${OBS_HEADER_PATH}
+    ${obs-studio_SOURCE_DIR}/libobs
 )
 
-# 4. Link & Properties
+# 5. Link & Output
 target_link_libraries(MegaGremlin-Grade PRIVATE obs)
 
 set_target_properties(MegaGremlin-Grade PROPERTIES

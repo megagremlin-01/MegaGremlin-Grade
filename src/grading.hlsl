@@ -1,27 +1,27 @@
 // OBS Standard Uniforms
 uniform float4x4 ViewProj;
-uniform texture2d image;
+uniform texture2d image; // Must be lowercase 'texture2d'
 
-// Sampler state for the video texture
+// Sampler tells the GPU how to read the pixels
 sampler_state textureSampler {
     Filter    = Linear;
     AddressU  = Clamp;
     AddressV  = Clamp;
 };
 
-// Data passed from OBS to the Vertex Shader
+// Input from OBS
 struct VertData {
     float4 pos : POSITION;
     float2 uv  : TEXCOORD0;
 };
 
-// Data passed from Vertex Shader to Pixel Shader
+// Output from Vertex to Pixel Shader
 struct PixelData {
     float4 pos : OVERLAY_COORD;
     float2 uv  : TEXCOORD0;
 };
 
-// Default Vertex Shader
+// Standard Vertex Shader
 PixelData VSDefault(VertData v_in)
 {
     PixelData vert_out;
@@ -30,14 +30,14 @@ PixelData VSDefault(VertData v_in)
     return vert_out;
 }
 
-// Pixel Shader: Initial Pass-through
+// Pixel Shader: Simple Pass-Through
 float4 PSDrawLowLatency(PixelData p_in) : TARGET
 {
-    // Sample the video feed
+    // Sample the current frame (your video)
     return image.Sample(textureSampler, p_in.uv);
 }
 
-// Technique definition required by OBS
+// Technique block: Tells OBS how to use this file
 technique Draw
 {
     pass
